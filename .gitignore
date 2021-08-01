@@ -1,0 +1,23 @@
+# IDE
+.idea
+
+# Packing
+darbiadev_shipping.egg-info
+build
+dist
+poetry.lock
+
+# Virtual environment
+venv
+
+# Cache
+__pycache__
+
+# Docs
+docs/build
+
+# Testing
+.tox
+
+# Type checking
+.mypy_cache
