@@ -3,15 +3,9 @@
 import re
 from typing import Optional
 
-from darbiadev_shipping.fedex import FedExClient
-from darbiadev_shipping.ups import UPSClient
-from darbiadev_shipping.usps import USPSClient
-
 
 class ShippingServices:
-    """
-    A class wrapping multiple packages
-    """
+    """A class wrapping multiple shipping carrier API wrapping packages, providing a higher level multi carrier package."""
 
     def __init__(
             self,
@@ -19,9 +13,30 @@ class ShippingServices:
             fedex_auth: Optional[dict[str, str]] = None,
             usps_auth: Optional[dict[str, str]] = None
     ):
-        self.ups_client: Optional[UPSClient] = UPSClient(ups_auth) if ups_auth is not None else None
-        self.fedex_client: Optional[FedExClient] = FedExClient(fedex_auth) if fedex_auth is not None else None
-        self.usps_client: Optional[USPSClient] = USPSClient(usps_auth) if fedex_auth is not None else None
+        self.ups_client = None
+        self.fedex_client = None
+        self.usps_client = None
+
+        if ups_auth is not None:
+            try:
+                from darbiadev_ups.ups_services import UPSServices
+                self.ups_client = UPSServices(**ups_auth)
+            except ImportError as e:
+                raise ImportError('Install darbiadev-ups for UPS support') from e
+
+        if fedex_auth is not None:
+            try:
+                from darbiadev_fedex.fedex_services import FedExServices
+                self.fedex_client = FedExServices(**fedex_auth)
+            except ImportError as e:
+                raise ImportError('Install darbiadev-fedex for FedEx support') from e
+
+        if usps_auth is not None:
+            try:
+                from darbiadev_usps.usps_services import USPSServices
+                self.usps_client = USPSServices(**usps_auth)
+            except ImportError as e:
+                raise ImportError('Install darbiadev-usps for USPS support') from e
 
     def guess_service(
             self,
@@ -47,4 +62,4 @@ class ShippingServices:
         elif service == 'usps':
             return self.usps_client.track(tracking_number)
         else:
-            raise ValueError(f'Invalid Service: {service}')
+            raise ValueError(f'Invalid service: {service}')

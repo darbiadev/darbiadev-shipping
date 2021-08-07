@@ -1,5 +1,5 @@
 # darbiadev-shipping
 
-This package combines multiple shipping carriers API's into a consistent interface.
+A class wrapping multiple shipping carrier API wrapping packages, providing a higher level multi carrier package.
 
-Sphinx documentation is hosted [here](https://darbiadev.github.io/darbiadev-shipping/)
+Documentation is hosted [here](https://darbiadev.github.io/darbiadev-shipping/)

@@ -14,7 +14,7 @@ python = "^3.9"
 
 python-benedict = "^0.24.1"
 
-darbiadev-ups = "^0.3.0"
+darbiadev-ups = "^0.4.0"
 darbiadev-fedex = "^0.3.0"
 darbiadev-usps = "^0.5.0"
 
@@ -45,5 +45,11 @@ build-backend = "poetry.core.masonry.api"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
+envlist = py39
 isolated_build = True
+[testenv]
+deps =
+    pytest
+commands =
+    pytest
 """
