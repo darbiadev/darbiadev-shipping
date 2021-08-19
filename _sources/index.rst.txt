@@ -1,14 +1,23 @@
-Welcome to darbiadev-shipping's documentation!
-==============================================
+darbiadev-shipping
+=============
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :glob:
 
+Module Index
+------------
 
+Each of the ``darbiadev_shipping`` modules is documented here.
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   shipping_services
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
