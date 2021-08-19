@@ -1,7 +1,41 @@
 #!/usr/bin/env python
 
 import re
+from enum import Enum, auto
 from typing import Optional
+
+
+class Carrier(Enum):
+    """An enum of shipping carriers"""
+    UPS = auto()
+    FEDEX = auto()
+    USPS = auto()
+
+
+def guess_carrier(
+        tracking_number: str
+) -> Optional[Carrier]:
+    """
+    Guess which carrier a tracking number belongs to
+
+    Parameters
+    ----------
+    tracking_number
+        The tracking number to guess a carrier for.
+
+    Returns
+    -------
+    Optional[Carrier]
+        The carrier the tracking number belongs to.
+    """
+
+    if re.compile(r'1Z\d*').match(tracking_number):
+        return Carrier.UPS
+
+    if re.compile(r'\d{12}').match(tracking_number):
+        return Carrier.FEDEX
+
+    return None
 
 
 class ShippingServices:
@@ -21,45 +55,50 @@ class ShippingServices:
             try:
                 from darbiadev_ups.ups_services import UPSServices
                 self.ups_client = UPSServices(**ups_auth)
-            except ImportError as e:
-                raise ImportError('Install darbiadev-ups for UPS support') from e
+            except ImportError as error:
+                raise ImportError('Install darbiadev-ups for UPS support') from error
 
         if fedex_auth is not None:
             try:
                 from darbiadev_fedex.fedex_services import FedExServices
                 self.fedex_client = FedExServices(**fedex_auth)
-            except ImportError as e:
-                raise ImportError('Install darbiadev-fedex for FedEx support') from e
+            except ImportError as error:
+                raise ImportError('Install darbiadev-fedex for FedEx support') from error
 
         if usps_auth is not None:
             try:
                 from darbiadev_usps.usps_services import USPSServices
                 self.usps_client = USPSServices(**usps_auth)
-            except ImportError as e:
-                raise ImportError('Install darbiadev-usps for USPS support') from e
+            except ImportError as error:
+                raise ImportError('Install darbiadev-usps for USPS support') from error
 
-    def guess_service(
-            self,
-            tracking_number: str
-    ) -> Optional[str]:
-        ups_pattern = re.compile(r'1Z\d*')
-        if ups_pattern.match(tracking_number):
-            return 'ups'
-        return None
+    def _get_carrier_client(self, carrier: Carrier):
+        if carrier == Carrier.UPS:
+            if self.ups_client is None:
+                raise ImportError('UPS is not enabled.')
+            return self.ups_client
+
+        elif carrier == Carrier.FEDEX:
+            if self.fedex_client is None:
+                raise ImportError('FedEx is not enabled.')
+            return self.fedex_client
+
+        elif carrier == Carrier.USPS:
+            if self.usps_client is None:
+                raise ImportError('USPS is not enabled.')
+            return self.usps_client
 
     def track(
             self,
             tracking_number: str,
-            service: Optional[str] = None
-    ) -> dict[str, str]:
-        if service is None:
-            service = self.guess_service(tracking_number)
+            carrier: Optional[Carrier] = None
+    ) -> dict[str, ...]:
+        """Get details for tracking number"""
 
-        if service == 'ups':
-            return self.ups_client.track(tracking_number)
-        elif service == 'fedex':
-            return self.fedex_client.track(tracking_number)
-        elif service == 'usps':
-            return self.usps_client.track(tracking_number)
-        else:
-            raise ValueError(f'Invalid service: {service}')
+        if carrier is None:
+            carrier = guess_carrier(tracking_number)
+
+        if carrier is None:
+            raise ValueError(f'Unable to guess carrier for tracking number {tracking_number}')
+
+        return self._get_carrier_client(carrier=carrier).track(tracking_number=tracking_number)
