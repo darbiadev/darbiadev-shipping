@@ -89,4 +89,4 @@ def linkcode_resolve(domain, info):
         except (IOError, TypeError):
             pass
 
-    return f'{git_url}blob/main/{filename}'
+    return f'{git_url}/blob/main/{filename}'
