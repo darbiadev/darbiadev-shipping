@@ -1,5 +1,5 @@
 darbiadev-shipping
-=============
+==================
 
 .. toctree::
    :maxdepth: 2
