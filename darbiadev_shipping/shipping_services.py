@@ -2,11 +2,12 @@
 
 import re
 from enum import Enum, auto
-from typing import Optional
+from typing import Optional, Union
 
 
 class Carrier(Enum):
     """An enum of shipping carriers"""
+
     UPS = auto()
     FEDEX = auto()
     USPS = auto()
@@ -72,21 +73,38 @@ class ShippingServices:
             except ImportError as error:
                 raise ImportError('Install darbiadev-usps for USPS support') from error
 
-    def _get_carrier_client(self, carrier: Carrier):
-        if carrier == Carrier.UPS:
+        if ups_auth is None and fedex_auth is None and usps_auth is None:
+            raise ValueError('No clients are enabled. Please enable at least one client to use this package.')
+
+    def _get_carrier_client(
+            self,
+            carrier: Optional[Carrier] = None,
+    ) -> Union['UPSServices', 'FedExServices', 'USPSServices']:
+        client = None
+
+        if carrier is None:
+            clients = [self.ups_client, self.fedex_client, self.usps_client]
+            client = next((client for client in clients if client is not None), None)
+
+        elif carrier == Carrier.UPS:
             if self.ups_client is None:
-                raise ImportError('UPS is not enabled.')
-            return self.ups_client
+                raise ValueError('UPS is not enabled.')
+            client = self.ups_client
 
         elif carrier == Carrier.FEDEX:
             if self.fedex_client is None:
-                raise ImportError('FedEx is not enabled.')
-            return self.fedex_client
+                raise ValueError('FedEx is not enabled.')
+            client = self.fedex_client
 
         elif carrier == Carrier.USPS:
             if self.usps_client is None:
-                raise ImportError('USPS is not enabled.')
-            return self.usps_client
+                raise ValueError('USPS is not enabled.')
+            client = self.usps_client
+
+        if client is None:
+            raise ValueError('No suitable client found')
+
+        return client
 
     def track(
             self,
@@ -102,3 +120,49 @@ class ShippingServices:
             raise ValueError(f'Unable to guess carrier for tracking number {tracking_number}')
 
         return self._get_carrier_client(carrier=carrier).track(tracking_number=tracking_number)
+
+    def validate_address(
+            self,
+            street_lines: list[str],
+            city: str,
+            state: str,
+            postal_code: str,
+            country: str,
+            carrier: Optional[Carrier] = None
+    ):
+        """Validate an address"""
+
+        return self._get_carrier_client(
+            carrier=carrier
+        ).validate_address(
+            street_lines=street_lines,
+            city=city,
+            state=state,
+            postal_code=postal_code,
+            country=country,
+        )
+
+    def time_in_transit(
+            self,
+            from_state: str,
+            from_postal_code: str,
+            from_country: str,
+            to_state: str,
+            to_postal_code: str,
+            to_country: str,
+            weight: str,
+            carrier: Optional[Carrier] = None
+    ):
+        """Get estimated time in transit information"""
+
+        return self._get_carrier_client(
+            carrier=carrier
+        ).time_in_transit(
+            from_state=from_state,
+            from_postal_code=from_postal_code,
+            from_country=from_country,
+            to_state=to_state,
+            to_postal_code=to_postal_code,
+            to_country=to_country,
+            weight=weight,
+        )
