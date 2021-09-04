@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+import importlib
 import re
 from enum import Enum, auto
-from typing import Optional, Union
+from typing import Optional
 
 
-class Carrier(Enum):
+class CarrierEnum(Enum):
     """An enum of shipping carriers"""
 
     UPS = auto()
@@ -13,30 +14,51 @@ class Carrier(Enum):
     USPS = auto()
 
 
-def guess_carrier(
-        tracking_number: str
-) -> Optional[Carrier]:
-    """
-    Guess which carrier a tracking number belongs to
+class Carrier:
+    """A shipping carrier"""
 
-    Parameters
-    ----------
-    tracking_number
-        The tracking number to guess a carrier for.
+    def __init__(
+            self,
+            name: str,
+            client_package: str,
+            client_class: str,
+            auth_dict: dict[str, str],
+    ) -> None:
+        self.name: str = name
 
-    Returns
-    -------
-    Optional[Carrier]
-        The carrier the tracking number belongs to.
-    """
+        try:
+            module = importlib.import_module(client_package)
+            class_ = getattr(module, client_class)
+            self.client = class_(**auth_dict)
+        except ImportError as error:
+            raise ImportError(f"Install {client_package.split('.')[0]} for {name} support") from error
 
-    if re.compile(r'1Z\d*').match(tracking_number):
-        return Carrier.UPS
 
-    if re.compile(r'\d{12}').match(tracking_number):
-        return Carrier.FEDEX
+class CarrierRegistrar:
+    """A registrar for carriers"""
 
-    return None
+    def __init__(self) -> None:
+        self.carriers: dict[CarrierEnum, Carrier] = dict()
+
+    def register_carrier(
+            self,
+            carrier_enum: CarrierEnum,
+            name: str,
+            client_package: str,
+            client_class: str,
+            auth_dict: Optional[dict[str, str]],
+    ) -> None:
+        """Register carrier in the registrar"""
+
+        if auth_dict is not None:
+            self.carriers.update({
+                carrier_enum: Carrier(
+                    name=name,
+                    client_package=client_package,
+                    client_class=client_class,
+                    auth_dict=auth_dict,
+                )
+            })
 
 
 class ShippingServices:
@@ -48,78 +70,95 @@ class ShippingServices:
             fedex_auth: Optional[dict[str, str]] = None,
             usps_auth: Optional[dict[str, str]] = None
     ):
-        self.ups_client = None
-        self.fedex_client = None
-        self.usps_client = None
+        auth_dicts = [value for key, value in locals().items() if key.endswith('_auth')]
+        at_least_one_carrier_enabled = any(value is not None for value in auth_dicts)
+        if not at_least_one_carrier_enabled:
+            raise ValueError('No carriers are enabled. Please enable at least one carrier to use this package.')
 
-        if ups_auth is not None:
-            try:
-                from darbiadev_ups.ups_services import UPSServices
-                self.ups_client = UPSServices(**ups_auth)
-            except ImportError as error:
-                raise ImportError('Install darbiadev-ups for UPS support') from error
+        self.carrier_registrar = CarrierRegistrar()
 
-        if fedex_auth is not None:
-            try:
-                from darbiadev_fedex.fedex_services import FedExServices
-                self.fedex_client = FedExServices(**fedex_auth)
-            except ImportError as error:
-                raise ImportError('Install darbiadev-fedex for FedEx support') from error
+        self.carrier_registrar.register_carrier(
+            carrier_enum=CarrierEnum.UPS,
+            name='UPS',
+            client_package='darbiadev_ups',
+            client_class='UPSServices',
+            auth_dict=ups_auth
+        )
 
-        if usps_auth is not None:
-            try:
-                from darbiadev_usps.usps_services import USPSServices
-                self.usps_client = USPSServices(**usps_auth)
-            except ImportError as error:
-                raise ImportError('Install darbiadev-usps for USPS support') from error
+        self.carrier_registrar.register_carrier(
+            carrier_enum=CarrierEnum.FEDEX,
+            name='FedEx',
+            client_package='darbiadev_fedex.fedex_services',
+            client_class='FedExServices',
+            auth_dict=fedex_auth
+        )
 
-        if ups_auth is None and fedex_auth is None and usps_auth is None:
-            raise ValueError('No clients are enabled. Please enable at least one client to use this package.')
+        self.carrier_registrar.register_carrier(
+            carrier_enum=CarrierEnum.USPS,
+            name='USPS',
+            client_package='darbiadev_usps.usps_services',
+            client_class='USPSServices',
+            auth_dict=usps_auth
+        )
 
-    def _get_carrier_client(
+    def _get_carrier_from_registrar(
             self,
-            carrier: Optional[Carrier] = None,
-    ) -> Union['UPSServices', 'FedExServices', 'USPSServices']:
-        client = None
+            carrier_enum: Optional[CarrierEnum] = None,
+    ) -> Carrier:
+        """Get a carrier from the registrar"""
+
+        if carrier_enum is not None:
+            carrier = self.carrier_registrar.carriers.get(carrier_enum, None)
+            if carrier is None:
+                raise ValueError(f'{carrier_enum} is not enabled.')
+        else:
+            carrier = list(self.carrier_registrar.carriers.values())[0]
 
         if carrier is None:
-            clients = [self.ups_client, self.fedex_client, self.usps_client]
-            client = next((client for client in clients if client is not None), None)
+            raise ValueError('No suitable carrier found')
 
-        elif carrier == Carrier.UPS:
-            if self.ups_client is None:
-                raise ValueError('UPS is not enabled.')
-            client = self.ups_client
+        return carrier
 
-        elif carrier == Carrier.FEDEX:
-            if self.fedex_client is None:
-                raise ValueError('FedEx is not enabled.')
-            client = self.fedex_client
+    def guess_carrier(
+            self,
+            tracking_number: str
+    ) -> Optional[CarrierEnum]:
+        """
+        Guess which carrier a tracking number belongs to
 
-        elif carrier == Carrier.USPS:
-            if self.usps_client is None:
-                raise ValueError('USPS is not enabled.')
-            client = self.usps_client
+        Parameters
+        ----------
+        tracking_number
+            The tracking number to guess a carrier for.
 
-        if client is None:
-            raise ValueError('No suitable client found')
+        Returns
+        -------
+        Optional[CarrierEnum]
+            The carrier the tracking number belongs to.
+        """
 
-        return client
+        for carrier_enum, carrier in self.carrier_registrar.carriers.items():
+            if re.match(carrier.client.TRACKING_REGEX, tracking_number):
+                return carrier_enum
+
+        return None
 
     def track(
             self,
             tracking_number: str,
-            carrier: Optional[Carrier] = None
-    ) -> dict[str, ...]:
+            carrier_enum: Optional[CarrierEnum] = None,
+    ) -> dict:
         """Get details for tracking number"""
 
-        if carrier is None:
-            carrier = guess_carrier(tracking_number)
+        if carrier_enum is None:
+            carrier_enum = self.guess_carrier(tracking_number)
 
-        if carrier is None:
+        if carrier_enum is None:
             raise ValueError(f'Unable to guess carrier for tracking number {tracking_number}')
 
-        return self._get_carrier_client(carrier=carrier).track(tracking_number=tracking_number)
+        client = self._get_carrier_from_registrar(carrier_enum=carrier_enum).client
+
+        return client.track(tracking_number=tracking_number)
 
     def validate_address(
             self,
@@ -128,13 +167,13 @@ class ShippingServices:
             state: str,
             postal_code: str,
             country: str,
-            carrier: Optional[Carrier] = None
+            carrier_enum: Optional[CarrierEnum] = None,
     ):
         """Validate an address"""
 
-        return self._get_carrier_client(
-            carrier=carrier
-        ).validate_address(
+        client = self._get_carrier_from_registrar(carrier_enum=carrier_enum).client
+
+        return client.validate_address(
             street_lines=street_lines,
             city=city,
             state=state,
@@ -151,13 +190,13 @@ class ShippingServices:
             to_postal_code: str,
             to_country: str,
             weight: str,
-            carrier: Optional[Carrier] = None
+            carrier_enum: Optional[CarrierEnum] = None,
     ):
         """Get estimated time in transit information"""
 
-        return self._get_carrier_client(
-            carrier=carrier
-        ).time_in_transit(
+        client = self._get_carrier_from_registrar(carrier_enum=carrier_enum).client
+
+        return client.time_in_transit(
             from_state=from_state,
             from_postal_code=from_postal_code,
             from_country=from_country,

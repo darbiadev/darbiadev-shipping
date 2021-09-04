@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "darbiadev-shipping"
-version = "0.3.0"
+version = "0.4.0"
 description = "darbiadev-shipping"
 authors = ["Bradley Reynolds <bradley.reynolds@darbia.dev>"]
 license = "MIT"
@@ -12,7 +12,7 @@ documentation = "https://darbiadev.github.io/darbiadev-shipping/"
 # Python
 python = "^3.9"
 
-darbiadev-ups = { version = "^0.4.0", optional = true }
+darbiadev-ups = { version = "^0.5.0", optional = true }
 darbiadev-fedex = { version = "^0.3.0", optional = true }
 darbiadev-usps = { version = "^0.5.0", optional = true }
 
@@ -28,18 +28,23 @@ pytest = { version = "^6.2.4", optional = true }
 tox = { version = "^3.24.0", optional = true }
 
 [tool.poetry.extras]
-ups = ['darbiadev-ups']
-fedex = ['darbiadev-fedex']
-usps = ['darbiadev-usps']
+ups = ["darbiadev-ups"]
+fedex = ["darbiadev-fedex"]
+usps = ["darbiadev-usps"]
 
-docs = ['sphinx', 'sphinxcontrib-napoleon', 'sphinxcontrib-autoprogram', 'sphinx_rtd_theme', 'toml']
-tests = ['pytest', 'tox']
+docs = ["sphinx", "sphinxcontrib-napoleon", "sphinxcontrib-autoprogram", "sphinx_rtd_theme", "toml"]
+tests = ["pytest", "tox"]
 
 [tool.poetry.dev-dependencies]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.sphinx]
+copyright = "2021, Darbia"
+author = "Bradley Reynolds"
+api_dir = "darbiadev_shipping"
 
 [tool.tox]
 legacy_tox_ini = """
