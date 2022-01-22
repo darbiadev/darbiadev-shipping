@@ -1,59 +1,61 @@
-[tool.poetry]
+[project]
+authors = [
+    { name = "Bradley Reynolds", email = "bradley.reynolds@darbia.dev" },
+]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = []
 name = "darbiadev-shipping"
 version = "0.4.0"
 description = "darbiadev-shipping"
-authors = ["Bradley Reynolds <bradley.reynolds@darbia.dev>"]
-license = "MIT"
 readme = "README.md"
+
+[project.urls]
 repository = "https://github.com/darbiadev/darbiadev-shipping"
 documentation = "https://darbiadev.github.io/darbiadev-shipping/"
 
-[tool.poetry.dependencies]
-# Python
-python = "^3.9"
+[project.optional-dependencies]
+ups = ["darbiadev-ups<1.0.0,>=0.5.0"]
+fedex = ["darbiadev-fedex<1.0.0,>=0.3.0"]
+usps = ["darbiadev-usps<1.0.0,>=0.5.0"]
 
-darbiadev-ups = { version = "^0.5.0", optional = true }
-darbiadev-fedex = { version = "^0.3.0", optional = true }
-darbiadev-usps = { version = "^0.5.0", optional = true }
-
-# Docs
-sphinx = { version = "^4.1.1", optional = true }
-sphinxcontrib-napoleon = { version =  "^0.7", optional = true }
-sphinxcontrib-autoprogram = { version = "^0.1.7", optional = true }
-sphinx-rtd-theme = { version = "^0.5.2", optional = true }
-toml = { version = "^0.10.2", optional = true }
-
-# Tests
-pytest = { version = "^6.2.4", optional = true }
-tox = { version = "^3.24.0", optional = true }
-
-[tool.poetry.extras]
-ups = ["darbiadev-ups"]
-fedex = ["darbiadev-fedex"]
-usps = ["darbiadev-usps"]
-
-docs = ["sphinx", "sphinxcontrib-napoleon", "sphinxcontrib-autoprogram", "sphinx_rtd_theme", "toml"]
-tests = ["pytest", "tox"]
-
-[tool.poetry.dev-dependencies]
+[tool]
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+dev = [
+    "pip-licenses>=3.5.3",
+    "taskipy>=1.9.0",
+    "pre-commit>=2.16.0",
+    "pylint>=2.12.2",
+    "pytest>=6.2.5",
+    "pytest-cov>=3.0.0",
+    "black>=21.12b0",
+]
+tests = [
+    "pytest>=6.2.5",
+]
+docs = [
+    "sphinx>=4.3.2",
+    "sphinxcontrib-autoprogram>=0.1.7",
+    "sphinx-rtd-theme>=1.0.0",
+    "toml>=0.10.2",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
 
 [tool.sphinx]
 copyright = "2021, Darbia"
 author = "Bradley Reynolds"
 api_dir = "darbiadev_shipping"
 
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py39
-isolated_build = True
-[testenv]
-deps =
-    pytest
-commands =
-    pytest
-"""
+[tool.black]
+target-version = ["py310"]
+line-length = 120
+
+[tool.pytest.ini_options]
+addopts = "tests -r a -v --doctest-modules darbiadev_shipping"
+
+[tool.pylint.format]
+max-line-length = 120
