@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Sphinx configuration file"""
 
 # Configuration file for the Sphinx documentation builder.
 # This file only contains a selection of the most common options. For a full
@@ -32,8 +33,8 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.todo",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
     "sphinxcontrib.autoprogram",
-    "sphinxcontrib.napoleon",
 ]
 
 apidoc_module_dir = f"../../{api_dir}"
@@ -62,6 +63,7 @@ html_static_path = ["_static"]
 
 
 def linkcode_resolve(domain, info):
+    """linkcode_resolve"""
     if domain != "py":
         return None
     if not info["module"]:
