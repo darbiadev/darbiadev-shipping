@@ -14,9 +14,9 @@ import toml
 sys.path.insert(0, os.path.abspath("../.."))
 
 project_config = toml.load("../../pyproject.toml")
-project = project_config["tool"]["poetry"]["name"]
-release = project_config["tool"]["poetry"]["version"]
-git_url = project_config["tool"]["poetry"]["repository"]
+project = project_config["project"]["name"]
+release = project_config["project"]["version"]
+git_url = project_config["project"]["urls"]["repository"]
 copyright = project_config["tool"]["sphinx"]["copyright"]
 author = project_config["tool"]["sphinx"]["author"]
 api_dir = project_config["tool"]["sphinx"]["api_dir"]
