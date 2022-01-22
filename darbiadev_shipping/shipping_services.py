@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""shipping_services"""
 
 import importlib
 import re
@@ -13,7 +14,7 @@ class CarrierEnum(Enum):
     USPS = auto()
 
 
-class Carrier:
+class Carrier:  # pylint: disable=too-few-public-methods
     """A shipping carrier"""
 
     def __init__(
@@ -33,11 +34,11 @@ class Carrier:
             raise ImportError(f"Install {client_package.split('.')[0]} for {name} support") from error
 
 
-class CarrierRegistrar:
+class CarrierRegistrar:  # pylint: disable=too-few-public-methods
     """A registrar for carriers"""
 
     def __init__(self) -> None:
-        self.carriers: dict[CarrierEnum, Carrier] = dict()
+        self.carriers: dict[CarrierEnum, Carrier] = {}
 
     def register_carrier(
         self,
