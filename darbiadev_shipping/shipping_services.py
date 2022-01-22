@@ -3,7 +3,6 @@
 import importlib
 import re
 from enum import Enum, auto
-from typing import Optional
 
 
 class CarrierEnum(Enum):
@@ -46,7 +45,7 @@ class CarrierRegistrar:
             name: str,
             client_package: str,
             client_class: str,
-            auth_dict: Optional[dict[str, str]],
+            auth_dict: dict[str, str] | None,
     ) -> None:
         """Register carrier in the registrar"""
 
@@ -62,15 +61,17 @@ class CarrierRegistrar:
 
 
 class ShippingServices:
-    """A class wrapping multiple shipping carrier API wrapping packages, providing a higher level multi carrier package."""
+    """
+    A class wrapping multiple shipping carrier API wrapping packages, providing a higher level multi carrier package.
+    """
 
     def __init__(
             self,
-            ups_auth: Optional[dict[str, str]] = None,
-            fedex_auth: Optional[dict[str, str]] = None,
-            usps_auth: Optional[dict[str, str]] = None
+            ups_auth: dict[str, str] | None = None,
+            fedex_auth: dict[str, str] | None = None,
+            usps_auth: dict[str, str] | None = None
     ):
-        auth_dicts = [value for key, value in locals().items() if key.endswith('_auth')]
+        auth_dicts: list[dict[str, str]] = [value for key, value in locals().items() if key.endswith('_auth')]
         at_least_one_carrier_enabled = any(value is not None for value in auth_dicts)
         if not at_least_one_carrier_enabled:
             raise ValueError('No carriers are enabled. Please enable at least one carrier to use this package.')
@@ -103,7 +104,7 @@ class ShippingServices:
 
     def _get_carrier_from_registrar(
             self,
-            carrier_enum: Optional[CarrierEnum] = None,
+            carrier_enum: CarrierEnum | None = None,
     ) -> Carrier:
         """Get a carrier from the registrar"""
 
@@ -122,7 +123,7 @@ class ShippingServices:
     def guess_carrier(
             self,
             tracking_number: str
-    ) -> Optional[CarrierEnum]:
+    ) -> CarrierEnum | None:
         """
         Guess which carrier a tracking number belongs to
 
@@ -133,7 +134,7 @@ class ShippingServices:
 
         Returns
         -------
-        Optional[CarrierEnum]
+        CarrierEnum|None
             The carrier the tracking number belongs to.
         """
 
@@ -146,7 +147,7 @@ class ShippingServices:
     def track(
             self,
             tracking_number: str,
-            carrier_enum: Optional[CarrierEnum] = None,
+            carrier_enum: CarrierEnum | None = None,
     ) -> dict:
         """Get details for tracking number"""
 
@@ -167,7 +168,7 @@ class ShippingServices:
             state: str,
             postal_code: str,
             country: str,
-            carrier_enum: Optional[CarrierEnum] = None,
+            carrier_enum: CarrierEnum | None = None,
     ):
         """Validate an address"""
 
@@ -190,7 +191,7 @@ class ShippingServices:
             to_postal_code: str,
             to_country: str,
             weight: str,
-            carrier_enum: Optional[CarrierEnum] = None,
+            carrier_enum: CarrierEnum | None = None,
     ):
         """Get estimated time in transit information"""
 
