@@ -66,9 +66,10 @@ jobs:
       # and add it to the ALLOWED_LICENSE variable
       - name: Check Dependencies License
         run: |
-          pip install pip-licenses
-          pip-licenses --allow-only="$ALLOWED_LICENSE" \
-            --package $(pdm export --format=requirements --without-hashes --production 2>/dev/null | sed "s/==.*//g" | tr "\n" " ")
+          echo "This project currently has no dependencies"
+          # pip install pip-licenses
+          # pip-licenses --allow-only="$ALLOWED_LICENSE" \
+          #  --package $(pdm export --format=requirements --without-hashes --production 2>/dev/null | sed "s/==.*//g" | tr "\n" " ")
 
       # This step caches our pre-commit environment. To make sure we
       # do create a new environment when our pre-commit setup changes,
