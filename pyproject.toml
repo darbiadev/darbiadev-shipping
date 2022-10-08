@@ -24,8 +24,6 @@ fedex = [
 usps = [
     "darbiadev-usps<1.0.0,>=0.5.0"
 ]
-
-[project.optional-dependencies]
 dev = [
     "pylint>=2.12.2",
     "pytest>=6.2.5",
