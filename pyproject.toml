@@ -1,31 +1,32 @@
 [project]
+name = "darbiadev-shipping"
+version = "0.4.0"
+description = "darbiadev-shipping"
+readme = "README.md"
 authors = [
     { name = "Bradley Reynolds", email = "bradley.reynolds@darbia.dev" },
 ]
 license = { text = "MIT" }
 requires-python = ">=3.7"
 dependencies = []
-name = "darbiadev-shipping"
-version = "0.4.0"
-description = "darbiadev-shipping"
-readme = "README.md"
 
 [project.urls]
 repository = "https://github.com/darbiadev/darbiadev-shipping"
 documentation = "https://darbiadev.github.io/darbiadev-shipping/"
 
 [project.optional-dependencies]
-ups = ["darbiadev-ups<1.0.0,>=0.5.0"]
-fedex = ["darbiadev-fedex<1.0.0,>=0.3.0"]
-usps = ["darbiadev-usps<1.0.0,>=0.5.0"]
+ups = [
+    "darbiadev-ups<1.0.0,>=0.5.0"
+]
+fedex = [
+    "darbiadev-fedex<1.0.0,>=0.3.0"
+]
+usps = [
+    "darbiadev-usps<1.0.0,>=0.5.0"
+]
 
-[tool]
-[tool.pdm]
-[tool.pdm.dev-dependencies]
+[project.optional-dependencies]
 dev = [
-    "pip-licenses>=3.5.3",
-    "taskipy>=1.9.0",
-    "pre-commit>=2.16.0",
     "pylint>=2.12.2",
     "pytest>=6.2.5",
     "pytest-cov>=3.0.0",
@@ -42,11 +43,11 @@ docs = [
 ]
 
 [build-system]
-requires = ["pdm-pep517"]
-build-backend = "pdm.pep517.api"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.sphinx]
-copyright = "2021, Darbia"
+copyright = "Darbia"
 author = "Bradley Reynolds"
 api_dir = "darbiadev_shipping"
 
@@ -58,7 +59,7 @@ line-length = 120
 profile = "black"
 
 [tool.pytest.ini_options]
-addopts = "tests -r a -v --doctest-modules darbiadev_shipping"
+addopts = "tests -r a -v --doctest-modules src"
 
 [tool.pylint.format]
 max-line-length = 120
