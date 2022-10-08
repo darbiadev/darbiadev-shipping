@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 A package wrapping multiple shipping carrier API wrapping packages, providing a higher level multi carrier package.
 """

@@ -1,12 +1,8 @@
 # IDE
 .idea
 
-# PDM
-__pypackages__
-.pdm.toml
-
 # Packaging
-darbiadev_shipping.egg-info
+*.egg-info
 dist
 
 # Cache
@@ -14,9 +10,3 @@ __pycache__
 
 # Docs
 docs/build
-
-# Type checking
-.mypy_cache
-
-# Testing
-.coverage
