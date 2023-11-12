@@ -1,5 +1,0 @@
-{
-    "yaml.schemas": {
-        "https://json.schemastore.org/pre-commit-config.json": "file:///workspaces/darbiadev-shipping/.github/workflows/.pre-commit-config.yaml"
-    }
-}
