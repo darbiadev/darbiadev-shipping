@@ -7,7 +7,7 @@ authors = [
     { name = "Bradley Reynolds", email = "bradley.reynolds@darbia.dev" },
 ]
 license = { text = "MIT" }
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = []
 
 [project.urls]
@@ -25,46 +25,24 @@ usps = [
     "darbiadev-usps<1.0.0,>=0.5.0"
 ]
 dev = [
-    "pylint>=2.12.2",
-    "pytest>=6.2.5",
-    "pytest-cov>=3.0.0",
-    "black>=21.12b0",
+    "pip-tools",
+    "pre-commit",
+    "ruff",
 ]
 tests = [
-    "pytest>=6.2.5",
+    "pytest",
+    "pytest-randomly",
 ]
 docs = [
-    "sphinx>=4.3.2",
-    "sphinxcontrib-autoprogram>=0.1.7",
-    "sphinx-rtd-theme>=1.0.0",
-    "toml>=0.10.2",
+    "sphinx",
+    "furo",
+    "sphinx-autoapi",
+    "releases",
 ]
 
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.sphinx]
-copyright = "Darbia"
-author = "Bradley Reynolds"
-api_dir = "darbiadev_shipping"
-
-[tool.black]
-target-version = ["py310"]
-line-length = 120
-
-[tool.isort]
-profile = "black"
-
 [tool.pytest.ini_options]
 addopts = "tests -r a -v --doctest-modules src"
-
-[tool.pylint.format]
-max-line-length = 120
-
-[tool.pylint.messages_control]
-disable = "R1705, R0913, R0914"
-# justifications:
-# R1705 (no-else-return) - else-return returns error
-# R0913 (too-many-arguments) - addresses have lots of fields
-# R0914 (too-many-locals) - addresses have lots of fields
