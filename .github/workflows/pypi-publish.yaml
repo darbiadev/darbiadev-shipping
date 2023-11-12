@@ -1,0 +1,49 @@
+name: "Publish Python 🐍 distributions 📦 to PyPI"
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-publish:
+    name: "Build and publish Python 🐍 distributions 📦 to PyPI"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: "Set up Python 3.x"
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          python-version: "3.x"
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
+
+      - name: "Install pypa/build"
+        run: >-
+          python -m
+          pip install
+          build
+          --user
+
+      - name: "Build a binary wheel and a source tarball"
+        run: >-
+          python -m
+          build
+          --outdir dist/
+
+      - name: "Upload packages"
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: packages
+          path: dist
+
+      - name: "Publish distribution 📦 to PyPI"
+        uses: pypa/gh-action-pypi-publish@b7f401de30cb6434a1e19f805ff006643653240e # v1.8.10
+        with:
+          skip-existing: true
+          verbose: true
+          print-hash: true

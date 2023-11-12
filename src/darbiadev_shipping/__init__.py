@@ -1,5 +1,5 @@
-"""
-A package wrapping multiple shipping carrier API wrapping packages, providing a higher level multi carrier package.
-"""
+"""A package wrapping multiple shipping carrier API wrapping packages, providing a common interface."""
 
 from .shipping_services import CarrierEnum, ShippingServices
+
+__all__ = ["CarrierEnum", "ShippingServices"]

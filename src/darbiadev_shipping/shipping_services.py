@@ -1,14 +1,13 @@
-"""shipping_services"""
-
-from __future__ import annotations
+"""shipping_services."""
 
 import importlib
 import re
 from enum import Enum, auto
+from typing import Self
 
 
 class CarrierEnum(Enum):
-    """An enum of shipping carriers"""
+    """An enum of shipping carriers."""
 
     UPS = auto()
     FEDEX = auto()
@@ -16,10 +15,10 @@ class CarrierEnum(Enum):
 
 
 class Carrier:  # pylint: disable=too-few-public-methods
-    """A shipping carrier"""
+    """A shipping carrier."""
 
     def __init__(
-        self,
+        self: Self,
         name: str,
         client_package: str,
         client_class: str,
@@ -32,25 +31,25 @@ class Carrier:  # pylint: disable=too-few-public-methods
             class_ = getattr(module, client_class)
             self.client = class_(**auth_dict)
         except ImportError as error:
-            raise ImportError(f"Install {client_package.split('.')[0]} for {name} support") from error
+            msg = f"Install {client_package.split('.')[0]} for {name} support"
+            raise ImportError(msg) from error
 
 
 class CarrierRegistrar:  # pylint: disable=too-few-public-methods
-    """A registrar for carriers"""
+    """A registrar for carriers."""
 
-    def __init__(self) -> None:
+    def __init__(self: Self) -> None:
         self.carriers: dict[CarrierEnum, Carrier] = {}
 
     def register_carrier(
-        self,
+        self: Self,
         carrier_enum: CarrierEnum,
         name: str,
         client_package: str,
         client_class: str,
         auth_dict: dict[str, str] | None,
     ) -> None:
-        """Register carrier in the registrar"""
-
+        """Register carrier in the registrar."""
         if auth_dict is not None:
             self.carriers.update(
                 {
@@ -59,26 +58,25 @@ class CarrierRegistrar:  # pylint: disable=too-few-public-methods
                         client_package=client_package,
                         client_class=client_class,
                         auth_dict=auth_dict,
-                    )
-                }
+                    ),
+                },
             )
 
 
 class ShippingServices:
-    """
-    A class wrapping multiple shipping carrier API wrapping packages, providing a higher level multi carrier package.
-    """
+    """A class wrapping multiple shipping carrier API wrapping packages, providing a common interface."""
 
     def __init__(
-        self,
+        self: Self,
         ups_auth: dict[str, str] | None = None,
         fedex_auth: dict[str, str] | None = None,
         usps_auth: dict[str, str] | None = None,
-    ):
+    ) -> None:
         auth_dicts: list[dict[str, str]] = [value for key, value in locals().items() if key.endswith("_auth")]
         at_least_one_carrier_enabled = any(value is not None for value in auth_dicts)
         if not at_least_one_carrier_enabled:
-            raise ValueError("No carriers are enabled. Please enable at least one carrier to use this package.")
+            msg = "No carriers are enabled. Please enable at least one carrier to use this package."
+            raise ValueError(msg)
 
         self.carrier_registrar = CarrierRegistrar()
 
@@ -107,26 +105,27 @@ class ShippingServices:
         )
 
     def _get_carrier_from_registrar(
-        self,
+        self: Self,
         carrier_enum: CarrierEnum | None = None,
     ) -> Carrier:
-        """Get a carrier from the registrar"""
-
+        """Get a carrier from the registrar."""
         if carrier_enum is not None:
             carrier = self.carrier_registrar.carriers.get(carrier_enum, None)
             if carrier is None:
-                raise ValueError(f"{carrier_enum} is not enabled.")
+                msg = f"{carrier_enum} is not enabled."
+                raise ValueError(msg)
         else:
-            carrier = list(self.carrier_registrar.carriers.values())[0]
+            carrier = next(iter(self.carrier_registrar.carriers.values()))
 
         if carrier is None:
-            raise ValueError("No suitable carrier found")
+            msg = "No suitable carrier found"
+            raise ValueError(msg)
 
         return carrier
 
-    def guess_carrier(self, tracking_number: str) -> CarrierEnum | None:
+    def guess_carrier(self: Self, tracking_number: str) -> CarrierEnum | None:
         """
-        Guess which carrier a tracking number belongs to
+        Guess which carrier a tracking number belongs to.
 
         Parameters
         ----------
@@ -138,7 +137,6 @@ class ShippingServices:
         CarrierEnum|None
             The carrier the tracking number belongs to.
         """
-
         for carrier_enum, carrier in self.carrier_registrar.carriers.items():
             if re.match(carrier.client.TRACKING_REGEX, tracking_number):
                 return carrier_enum
@@ -146,33 +144,32 @@ class ShippingServices:
         return None
 
     def track(
-        self,
+        self: Self,
         tracking_number: str,
         carrier_enum: CarrierEnum | None = None,
     ) -> dict:
-        """Get details for tracking number"""
-
+        """Get details for tracking number."""
         if carrier_enum is None:
             carrier_enum = self.guess_carrier(tracking_number)
 
         if carrier_enum is None:
-            raise ValueError(f"Unable to guess carrier for tracking number {tracking_number}")
+            msg = f"Unable to guess carrier for tracking number {tracking_number}"
+            raise ValueError(msg)
 
         client = self._get_carrier_from_registrar(carrier_enum=carrier_enum).client
 
         return client.track(tracking_number=tracking_number)
 
     def validate_address(
-        self,
+        self: Self,
         street_lines: list[str],
         city: str,
         state: str,
         postal_code: str,
         country: str,
         carrier_enum: CarrierEnum | None = None,
-    ):
-        """Validate an address"""
-
+    ) -> dict:
+        """Validate an address."""
         client = self._get_carrier_from_registrar(carrier_enum=carrier_enum).client
 
         return client.validate_address(
@@ -184,7 +181,7 @@ class ShippingServices:
         )
 
     def time_in_transit(
-        self,
+        self: Self,
         from_state: str,
         from_postal_code: str,
         from_country: str,
@@ -193,9 +190,8 @@ class ShippingServices:
         to_country: str,
         weight: str,
         carrier_enum: CarrierEnum | None = None,
-    ):
-        """Get estimated time in transit information"""
-
+    ) -> dict:
+        """Get estimated time in transit information."""
         client = self._get_carrier_from_registrar(carrier_enum=carrier_enum).client
 
         return client.time_in_transit(
