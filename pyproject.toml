@@ -12,7 +12,7 @@ dependencies = []
 
 [project.urls]
 repository = "https://github.com/darbiadev/darbiadev-shipping"
-documentation = "https://darbiadev.github.io/darbiadev-shipping/"
+documentation = "https://docs.darbia.dev/darbiadev-shipping/"
 
 [project.optional-dependencies]
 ups = [
