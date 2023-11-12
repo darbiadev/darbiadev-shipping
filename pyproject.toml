@@ -46,3 +46,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 addopts = "tests -r a -v --doctest-modules src"
+
+[tool.ruff]
+line-length = 120
